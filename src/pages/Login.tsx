@@ -4,15 +4,46 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "@/hooks/use-toast";
 
 export default function Login() {
   const [isSignup, setIsSignup] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { signIn, signUp, user } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Redirect if already logged in
+  if (user) {
+    navigate("/", { replace: true });
+    return null;
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    navigate("/");
+    setLoading(true);
+
+    if (isSignup) {
+      const { error } = await signUp(email, password, fullName);
+      if (error) {
+        toast({ title: "Sign up failed", description: error.message, variant: "destructive" });
+      } else {
+        toast({ title: "Account created!", description: "Check your email to confirm, or sign in if email confirmation is disabled." });
+        setIsSignup(false);
+      }
+    } else {
+      const { error } = await signIn(email, password);
+      if (error) {
+        toast({ title: "Sign in failed", description: error.message, variant: "destructive" });
+      } else {
+        navigate("/");
+      }
+    }
+    setLoading(false);
   };
 
   return (
@@ -32,12 +63,12 @@ export default function Login() {
           {isSignup && (
             <div className="space-y-2">
               <Label>Full Name</Label>
-              <Input placeholder="John Doe" />
+              <Input placeholder="John Doe" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
             </div>
           )}
           <div className="space-y-2">
             <Label>Email</Label>
-            <Input type="email" placeholder="john@company.com" />
+            <Input type="email" placeholder="john@company.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
           </div>
           <div className="space-y-2">
             <Label>Password</Label>
@@ -45,6 +76,10 @@ export default function Login() {
               <Input
                 type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={6}
               />
               <button
                 type="button"
@@ -55,8 +90,8 @@ export default function Login() {
               </button>
             </div>
           </div>
-          <Button type="submit" className="w-full">
-            {isSignup ? "Create Account" : "Sign In"}
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? "Please wait..." : isSignup ? "Create Account" : "Sign In"}
           </Button>
         </form>
 

@@ -14,7 +14,119 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      alerts: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string
+          severity: string
+          transaction_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message: string
+          severity?: string
+          transaction_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          severity?: string
+          transaction_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alerts_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number
+          card_last4: string
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          location: string
+          merchant: string
+          risk_level: string
+          risk_score: number
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          card_last4?: string
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          location?: string
+          merchant?: string
+          risk_level?: string
+          risk_score?: number
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          card_last4?: string
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          location?: string
+          merchant?: string
+          risk_level?: string
+          risk_score?: number
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

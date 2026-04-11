@@ -1,26 +1,13 @@
 import {
-  LayoutDashboard,
-  ArrowLeftRight,
-  Bell,
-  FileBarChart,
-  Settings,
-  Shield,
-  LogOut,
+  LayoutDashboard, ArrowLeftRight, Bell, FileBarChart, Settings, Shield, LogOut,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarFooter,
-  useSidebar,
+  Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
+  SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarFooter, useSidebar,
 } from "@/components/ui/sidebar";
+import { useAuth } from "@/hooks/useAuth";
 
 const mainItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
@@ -34,10 +21,17 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
+  const navigate = useNavigate();
+  const { signOut } = useAuth();
   const currentPath = location.pathname;
 
   const isActive = (path: string) =>
     path === "/" ? currentPath === "/" : currentPath.startsWith(path);
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/login");
+  };
 
   return (
     <Sidebar collapsible="icon">
@@ -47,26 +41,18 @@ export function AppSidebar() {
             <Shield className="h-4 w-4 text-sidebar-primary-foreground" />
           </div>
           {!collapsed && (
-            <span className="text-sidebar-accent-foreground font-semibold text-lg tracking-tight">
-              FraudShield
-            </span>
+            <span className="text-sidebar-accent-foreground font-semibold text-lg tracking-tight">FraudShield</span>
           )}
         </div>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/50 uppercase text-xs tracking-wider">
-            Navigation
-          </SidebarGroupLabel>
+          <SidebarGroupLabel className="text-sidebar-foreground/50 uppercase text-xs tracking-wider">Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {mainItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild isActive={isActive(item.url)}>
-                    <NavLink
-                      to={item.url}
-                      end={item.url === "/"}
-                      activeClassName="bg-sidebar-accent text-sidebar-accent-foreground"
-                    >
+                    <NavLink to={item.url} end={item.url === "/"} activeClassName="bg-sidebar-accent text-sidebar-accent-foreground">
                       <item.icon className="h-4 w-4" />
                       {!collapsed && <span>{item.title}</span>}
                     </NavLink>
@@ -81,11 +67,9 @@ export function AppSidebar() {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild>
-              <NavLink to="/login" activeClassName="">
-                <LogOut className="h-4 w-4" />
-                {!collapsed && <span>Logout</span>}
-              </NavLink>
+            <SidebarMenuButton onClick={handleLogout}>
+              <LogOut className="h-4 w-4" />
+              {!collapsed && <span>Logout</span>}
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

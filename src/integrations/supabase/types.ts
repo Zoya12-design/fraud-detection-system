@@ -42,15 +42,7 @@ export type Database = {
           transaction_id?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "alerts_transaction_id_fkey"
-            columns: ["transaction_id"]
-            isOneToOne: false
-            referencedRelation: "transactions"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -58,6 +50,7 @@ export type Database = {
           email: string | null
           full_name: string | null
           id: string
+          role: string | null
           updated_at: string
           user_id: string
         }
@@ -66,6 +59,7 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          role?: string | null
           updated_at?: string
           user_id: string
         }
@@ -74,6 +68,7 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          role?: string | null
           updated_at?: string
           user_id?: string
         }

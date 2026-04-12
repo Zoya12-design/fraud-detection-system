@@ -78,6 +78,36 @@ export function useUpdateTransactionStatus() {
   });
 }
 
+export function useUpdateTransaction() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      ...updates
+    }: {
+      id: string;
+      amount?: number;
+      merchant?: string;
+      location?: string;
+      category?: string;
+      card_last4?: string;
+      description?: string;
+      status?: string;
+    }) => {
+      const { error } = await supabase
+        .from("transactions")
+        .update(updates)
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["transactions"] });
+      qc.invalidateQueries({ queryKey: ["alerts"] });
+    },
+  });
+}
+
 export function useDeleteTransaction() {
   const qc = useQueryClient();
 

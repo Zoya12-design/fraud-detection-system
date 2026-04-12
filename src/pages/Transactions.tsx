@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Search, CheckCircle, XCircle, Plus } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
 import { RiskBadge, StatusBadge } from "@/components/RiskBadge";
+import { TransactionActions } from "@/components/TransactionActions";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,10 +14,12 @@ import {
 import { Label } from "@/components/ui/label";
 import { useTransactions, useCreateTransaction, useUpdateTransactionStatus, type DbTransaction } from "@/hooks/useTransactions";
 import type { RiskLevel, TransactionStatus } from "@/data/sampleData";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 const formatCurrency = (n: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n);
+
+const CATEGORIES = ["Retail", "Food & Dining", "Gas & Transport", "Entertainment", "ATM Withdrawal", "Wire Transfer", "Online Purchase", "Cryptocurrency"];
 
 export default function Transactions() {
   const { data: transactions = [], isLoading } = useTransactions();
@@ -54,20 +57,29 @@ export default function Transactions() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    const amount = parseFloat(newAmount);
+    if (isNaN(amount) || amount <= 0) {
+      toast.error("Amount must be a positive number");
+      return;
+    }
+    if (!newMerchant.trim()) {
+      toast.error("Merchant is required");
+      return;
+    }
     try {
       await createTxn.mutateAsync({
-        amount: parseFloat(newAmount),
-        merchant: newMerchant,
-        location: newLocation,
+        amount,
+        merchant: newMerchant.trim(),
+        location: newLocation.trim(),
         category: newCategory,
         card_last4: newCard,
-        description: newDesc,
+        description: newDesc.trim(),
       });
-      toast({ title: "Transaction created", description: "Fraud evaluation applied automatically." });
+      toast.success("Transaction created — fraud evaluation applied automatically.");
       setShowCreate(false);
       setNewAmount(""); setNewMerchant(""); setNewLocation(""); setNewDesc("");
     } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast.error(err.message || "Failed to create transaction");
     }
   };
 
@@ -149,14 +161,7 @@ export default function Transactions() {
                       </td>
                       <td className="p-4 text-center"><StatusBadge status={txn.status as TransactionStatus} /></td>
                       <td className="p-4 text-center">
-                        <div className="flex items-center justify-center gap-1" onClick={(e) => e.stopPropagation()}>
-                          <button onClick={() => markAs(txn.id, "safe")} className="p-1 rounded hover:bg-risk-low-bg text-risk-low" title="Mark as safe">
-                            <CheckCircle className="h-4 w-4" />
-                          </button>
-                          <button onClick={() => markAs(txn.id, "fraud")} className="p-1 rounded hover:bg-risk-high-bg text-risk-high" title="Mark as fraud">
-                            <XCircle className="h-4 w-4" />
-                          </button>
-                        </div>
+                        <TransactionActions txn={txn} />
                       </td>
                     </tr>
                   ))}
@@ -213,7 +218,7 @@ export default function Transactions() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Amount ($)</Label>
-                <Input type="number" step="0.01" required value={newAmount} onChange={(e) => setNewAmount(e.target.value)} placeholder="1000.00" />
+                <Input type="number" step="0.01" min="0.01" required value={newAmount} onChange={(e) => setNewAmount(e.target.value)} placeholder="1000.00" />
               </div>
               <div className="space-y-2">
                 <Label>Merchant</Label>
@@ -228,7 +233,7 @@ export default function Transactions() {
                 <Select value={newCategory} onValueChange={setNewCategory}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {["Retail", "Food & Dining", "Gas & Transport", "Entertainment", "ATM Withdrawal", "Wire Transfer", "Online Purchase", "Cryptocurrency"].map(c => (
+                    {CATEGORIES.map(c => (
                       <SelectItem key={c} value={c}>{c}</SelectItem>
                     ))}
                   </SelectContent>

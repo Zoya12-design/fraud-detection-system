@@ -1,5 +1,5 @@
 import {
-  LayoutDashboard, ArrowLeftRight, Bell, FileBarChart, Settings, Shield, LogOut,
+  LayoutDashboard, ArrowLeftRight, Bell, FileBarChart, Settings, Shield, LogOut, MessageCircle,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -14,6 +14,7 @@ const mainItems = [
   { title: "Transactions", url: "/transactions", icon: ArrowLeftRight },
   { title: "Alerts", url: "/alerts", icon: Bell },
   { title: "Reports", url: "/reports", icon: FileBarChart },
+  { title: "Chat", url: "/chat", icon: MessageCircle },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
 

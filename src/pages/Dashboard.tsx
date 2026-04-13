@@ -1,5 +1,5 @@
 import {
-  Activity, ShieldAlert, Clock, DollarSign, AlertTriangle, TrendingUp, ArrowUpRight,
+  Activity, ShieldAlert, Clock, DollarSign, AlertTriangle, ArrowUpRight,
 } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
 import { StatCard } from "@/components/StatCard";
@@ -7,6 +7,7 @@ import { RiskBadge, StatusBadge } from "@/components/RiskBadge";
 import { Link } from "react-router-dom";
 import { useTransactions } from "@/hooks/useTransactions";
 import { useAlerts } from "@/hooks/useAlerts";
+import { StatusDistributionChart, RiskAnalysisChart, CompletionChart } from "@/components/DashboardCharts";
 import type { RiskLevel, TransactionStatus } from "@/data/sampleData";
 
 const formatCurrency = (n: number) =>
@@ -28,7 +29,6 @@ export default function Dashboard() {
 
   const recentTxns = transactions.slice(0, 5);
   const recentAlerts = alerts.filter((a) => !a.is_read).slice(0, 4);
-
   const loading = txLoading || alLoading;
 
   return (
@@ -48,6 +48,13 @@ export default function Dashboard() {
               <StatCard title="Fraud Detected" value={fraudDetected.toString()} icon={ShieldAlert} variant="danger" />
               <StatCard title="Pending Review" value={pendingReview.toString()} icon={Clock} variant="warning" subtitle="Requires analyst review" />
               <StatCard title="Amount at Risk" value={formatCurrency(fraudAmount)} icon={DollarSign} variant="danger" />
+            </div>
+
+            {/* Charts */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <StatusDistributionChart transactions={transactions} />
+              <RiskAnalysisChart transactions={transactions} />
+              <CompletionChart transactions={transactions} />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -79,7 +86,7 @@ export default function Dashboard() {
                   <Link to="/transactions" className="text-sm text-primary hover:underline flex items-center gap-1">View all <ArrowUpRight className="h-3 w-3" /></Link>
                 </div>
                 <div className="divide-y">
-                  {recentTxns.length === 0 && <div className="p-6 text-center text-muted-foreground text-sm">No transactions yet. Create one to get started!</div>}
+                  {recentTxns.length === 0 && <div className="p-6 text-center text-muted-foreground text-sm">No transactions yet.</div>}
                   {recentTxns.map((txn) => (
                     <div key={txn.id} className="p-4 flex items-center justify-between">
                       <div className="flex items-center gap-3 min-w-0">

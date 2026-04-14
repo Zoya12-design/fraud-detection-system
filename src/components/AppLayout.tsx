@@ -23,6 +23,7 @@ interface AppLayoutProps {
 export function AppLayout({ children }: AppLayoutProps) {
   const { data: alerts = [] } = useAlerts();
   const { data: profile } = useProfile();
+  const { theme, setTheme, resolvedTheme } = useTheme();
   const unreadCount = alerts.filter((a) => !a.is_read).length;
   const [searchValue, setSearchValue] = useState("");
   const navigate = useNavigate();
@@ -59,7 +60,27 @@ export function AppLayout({ children }: AppLayoutProps) {
                 </div>
               </form>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              {/* Theme Toggle */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="p-2 rounded-md hover:bg-muted transition-colors">
+                    {resolvedTheme === "dark" ? <Moon className="h-4 w-4 text-muted-foreground" /> : <Sun className="h-4 w-4 text-muted-foreground" />}
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => setTheme("light")} className="gap-2">
+                    <Sun className="h-4 w-4" /> Light
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setTheme("dark")} className="gap-2">
+                    <Moon className="h-4 w-4" /> Dark
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setTheme("system")} className="gap-2">
+                    <Monitor className="h-4 w-4" /> System
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
               {/* Notification Bell */}
               <Popover>
                 <PopoverTrigger asChild>

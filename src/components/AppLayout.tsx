@@ -15,12 +15,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { RiskBadge } from "@/components/RiskBadge";
 import type { RiskLevel } from "@/data/sampleData";
-import { useProfile } from "@/hooks/useProfile";
-import {
-  Popover, PopoverContent, PopoverTrigger,
-} from "@/components/ui/popover";
-import { RiskBadge } from "@/components/RiskBadge";
-import type { RiskLevel } from "@/data/sampleData";
 
 interface AppLayoutProps {
   children: React.ReactNode;

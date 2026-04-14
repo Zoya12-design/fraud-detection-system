@@ -1,10 +1,20 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
-import { Bell, Search } from "lucide-react";
+import { Bell, Search, Sun, Moon, Monitor } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { useAlerts } from "@/hooks/useAlerts";
+import { useProfile } from "@/hooks/useProfile";
+import { useTheme } from "@/hooks/useTheme";
+import {
+  Popover, PopoverContent, PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { RiskBadge } from "@/components/RiskBadge";
+import type { RiskLevel } from "@/data/sampleData";
 import { useProfile } from "@/hooks/useProfile";
 import {
   Popover, PopoverContent, PopoverTrigger,

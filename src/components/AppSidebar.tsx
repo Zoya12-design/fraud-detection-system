@@ -1,5 +1,5 @@
 import {
-  LayoutDashboard, ArrowLeftRight, Bell, FileBarChart, Settings, Shield, LogOut, MessageCircle,
+  LayoutDashboard, ArrowLeftRight, Bell, FileBarChart, Settings, Shield, LogOut, MessageCircle, ShieldCheck,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -8,6 +8,7 @@ import {
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarFooter, useSidebar,
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/hooks/useAuth";
+import { useIsAdmin } from "@/hooks/useProfile";
 
 const mainItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
@@ -24,6 +25,7 @@ export function AppSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { signOut } = useAuth();
+  const isAdmin = useIsAdmin();
   const currentPath = location.pathname;
 
   const isActive = (path: string) =>
@@ -33,6 +35,10 @@ export function AppSidebar() {
     await signOut();
     navigate("/login");
   };
+
+  const items = isAdmin
+    ? [...mainItems, { title: "Admin", url: "/admin", icon: ShieldCheck }]
+    : mainItems;
 
   return (
     <Sidebar collapsible="icon">
@@ -50,7 +56,7 @@ export function AppSidebar() {
           <SidebarGroupLabel className="text-sidebar-foreground/50 uppercase text-xs tracking-wider">Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {mainItems.map((item) => (
+              {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild isActive={isActive(item.url)}>
                     <NavLink to={item.url} end={item.url === "/"} activeClassName="bg-sidebar-accent text-sidebar-accent-foreground">

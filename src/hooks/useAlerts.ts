@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
+import { useEffect } from "react";
 
 export interface DbAlert {
   id: string;
@@ -14,6 +15,27 @@ export interface DbAlert {
 
 export function useAlerts() {
   const { user } = useAuth();
+  const qc = useQueryClient();
+
+  // Real-time subscription for alerts
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel("alerts_realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "alerts" },
+        () => {
+          qc.invalidateQueries({ queryKey: ["alerts"] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, qc]);
 
   return useQuery({
     queryKey: ["alerts", user?.id],

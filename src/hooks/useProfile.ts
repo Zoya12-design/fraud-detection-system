@@ -8,6 +8,8 @@ export interface Profile {
   email: string | null;
   full_name: string | null;
   role: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export function useProfile() {
@@ -31,4 +33,22 @@ export function useProfile() {
 export function useIsAdmin() {
   const { data: profile } = useProfile();
   return profile?.role === "admin";
+}
+
+export function useAllProfiles() {
+  const { user } = useAuth();
+  const isAdmin = useIsAdmin();
+
+  return useQuery({
+    queryKey: ["all_profiles"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data as Profile[];
+    },
+    enabled: !!user && isAdmin,
+  });
 }

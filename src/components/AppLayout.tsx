@@ -5,9 +5,12 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { useAlerts } from "@/hooks/useAlerts";
+import { useProfile } from "@/hooks/useProfile";
 import {
   Popover, PopoverContent, PopoverTrigger,
 } from "@/components/ui/popover";
+import { RiskBadge } from "@/components/RiskBadge";
+import type { RiskLevel } from "@/data/sampleData";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -15,17 +18,20 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   const { data: alerts = [] } = useAlerts();
+  const { data: profile } = useProfile();
   const unreadCount = alerts.filter((a) => !a.is_read).length;
-  const [searchOpen, setSearchOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const navigate = useNavigate();
+
+  const initials = profile?.full_name
+    ? profile.full_name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)
+    : profile?.email?.[0]?.toUpperCase() || "U";
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchValue.trim()) {
       navigate(`/transactions?search=${encodeURIComponent(searchValue.trim())}`);
       setSearchValue("");
-      setSearchOpen(false);
     }
   };
 
@@ -37,7 +43,6 @@ export function AppLayout({ children }: AppLayoutProps) {
           <header className="h-14 flex items-center justify-between border-b bg-card px-4">
             <div className="flex items-center gap-2">
               <SidebarTrigger />
-              {/* Search */}
               <form onSubmit={handleSearchSubmit} className="hidden sm:flex items-center">
                 <div className="relative">
                   <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -57,35 +62,55 @@ export function AppLayout({ children }: AppLayoutProps) {
                   <button className="relative p-2 rounded-md hover:bg-muted transition-colors">
                     <Bell className="h-5 w-5 text-muted-foreground" />
                     {unreadCount > 0 && (
-                      <span className="absolute -top-0.5 -right-0.5 h-5 w-5 rounded-full bg-destructive flex items-center justify-center text-[10px] font-bold text-destructive-foreground">
+                      <span className="absolute -top-0.5 -right-0.5 h-5 w-5 rounded-full bg-destructive flex items-center justify-center text-[10px] font-bold text-destructive-foreground animate-pulse-slow">
                         {unreadCount > 9 ? "9+" : unreadCount}
                       </span>
                     )}
                   </button>
                 </PopoverTrigger>
                 <PopoverContent className="w-80 p-0" align="end">
-                  <div className="p-3 border-b font-semibold text-sm">Notifications ({unreadCount})</div>
-                  <div className="max-h-64 overflow-y-auto">
-                    {alerts.filter((a) => !a.is_read).slice(0, 5).map((alert) => (
-                      <div key={alert.id} className="p-3 border-b last:border-0 text-sm">
-                        <p className="text-xs text-muted-foreground mb-1">{new Date(alert.created_at).toLocaleString()}</p>
-                        <p className="line-clamp-2">{alert.message}</p>
+                  <div className="p-3 border-b font-semibold text-sm flex items-center justify-between">
+                    <span>Notifications</span>
+                    {unreadCount > 0 && (
+                      <span className="bg-destructive text-destructive-foreground text-xs px-2 py-0.5 rounded-full">{unreadCount}</span>
+                    )}
+                  </div>
+                  <div className="max-h-72 overflow-y-auto">
+                    {alerts.filter((a) => !a.is_read).slice(0, 6).map((alert) => (
+                      <div key={alert.id} className="p-3 border-b last:border-0 hover:bg-muted/50 transition-colors">
+                        <div className="flex items-center gap-2 mb-1">
+                          <RiskBadge level={alert.severity as RiskLevel} />
+                          <span className="text-[10px] text-muted-foreground">{new Date(alert.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground line-clamp-2">{alert.message}</p>
                       </div>
                     ))}
                     {unreadCount === 0 && (
-                      <div className="p-4 text-center text-sm text-muted-foreground">No new notifications</div>
+                      <div className="p-6 text-center text-sm text-muted-foreground">
+                        <Bell className="h-8 w-8 mx-auto mb-2 opacity-30" />
+                        No new notifications
+                      </div>
                     )}
                   </div>
                   {unreadCount > 0 && (
-                    <Link to="/alerts" className="block p-2 text-center text-sm text-primary hover:underline border-t">
-                      View all alerts
+                    <Link to="/alerts" className="block p-2.5 text-center text-sm text-primary hover:underline border-t font-medium">
+                      View all alerts →
                     </Link>
                   )}
                 </PopoverContent>
               </Popover>
 
-              <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium">
-                JD
+              {/* User Avatar */}
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium">
+                  {initials}
+                </div>
+                {profile && (
+                  <div className="hidden md:block">
+                    <p className="text-xs font-medium leading-none">{profile.full_name || profile.email}</p>
+                    <p className="text-[10px] text-muted-foreground">{profile.role || "user"}</p>
+                  </div>
+                )}
               </div>
             </div>
           </header>

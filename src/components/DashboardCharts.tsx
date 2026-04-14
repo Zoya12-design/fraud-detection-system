@@ -1,6 +1,6 @@
 import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, Legend,
+  ResponsiveContainer, Legend, LineChart, Line, AreaChart, Area,
 } from "recharts";
 
 interface ChartProps {
@@ -72,13 +72,13 @@ export function RiskAnalysisChart({ transactions }: ChartProps) {
       <ResponsiveContainer width="100%" height={250}>
         <BarChart data={data}>
           <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 15%, 90%)" />
-          <XAxis dataKey="category" tick={{ fontSize: 12 }} />
+          <XAxis dataKey="category" tick={{ fontSize: 11 }} angle={-20} textAnchor="end" height={60} />
           <YAxis tick={{ fontSize: 12 }} />
           <Tooltip />
           <Legend />
-          <Bar dataKey="high" fill={RISK_COLORS.high} name="High" />
-          <Bar dataKey="medium" fill={RISK_COLORS.medium} name="Medium" />
-          <Bar dataKey="low" fill={RISK_COLORS.low} name="Low" />
+          <Bar dataKey="high" fill={RISK_COLORS.high} name="High" radius={[2, 2, 0, 0]} />
+          <Bar dataKey="medium" fill={RISK_COLORS.medium} name="Medium" radius={[2, 2, 0, 0]} />
+          <Bar dataKey="low" fill={RISK_COLORS.low} name="Low" radius={[2, 2, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -113,6 +113,49 @@ export function CompletionChart({ transactions }: ChartProps) {
           <p>{reviewed} reviewed · {pending} pending</p>
         </div>
       </div>
+    </div>
+  );
+}
+
+export function DailyTrendChart({ transactions }: ChartProps) {
+  // Group transactions by date
+  const byDate = transactions.reduce((acc, t) => {
+    const date = new Date(t.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    if (!acc[date]) acc[date] = { date, total: 0, flagged: 0, fraud: 0 };
+    acc[date].total++;
+    if (t.status === "flagged") acc[date].flagged++;
+    if (t.status === "fraud") acc[date].fraud++;
+    return acc;
+  }, {} as Record<string, { date: string; total: number; flagged: number; fraud: number }>);
+
+  const data = Object.values(byDate).reverse().slice(-14);
+  if (data.length === 0) return null;
+
+  return (
+    <div className="bg-card rounded-lg border p-6">
+      <h3 className="font-semibold mb-4">Daily Transaction Trends</h3>
+      <ResponsiveContainer width="100%" height={280}>
+        <AreaChart data={data}>
+          <defs>
+            <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="hsl(220, 70%, 50%)" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="hsl(220, 70%, 50%)" stopOpacity={0} />
+            </linearGradient>
+            <linearGradient id="colorFraud" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="hsl(0, 72%, 51%)" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="hsl(0, 72%, 51%)" stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 15%, 90%)" />
+          <XAxis dataKey="date" tick={{ fontSize: 11 }} />
+          <YAxis tick={{ fontSize: 12 }} />
+          <Tooltip />
+          <Legend />
+          <Area type="monotone" dataKey="total" stroke="hsl(220, 70%, 50%)" fill="url(#colorTotal)" name="Total" />
+          <Area type="monotone" dataKey="flagged" stroke="hsl(38, 92%, 50%)" fill="hsl(38, 92%, 50%)" fillOpacity={0.1} name="Flagged" />
+          <Area type="monotone" dataKey="fraud" stroke="hsl(0, 72%, 51%)" fill="url(#colorFraud)" name="Fraud" />
+        </AreaChart>
+      </ResponsiveContainer>
     </div>
   );
 }
